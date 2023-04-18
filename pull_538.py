@@ -3,15 +3,6 @@ from bs4 import BeautifulSoup
 import time
 
 
-url = 'https://projects.fivethirtyeight.com/2023-nba-predictions/?ex_cid=rrpromo'
-page = requests.get(url)
-
-soup = BeautifulSoup(page.content, 'html.parser')
-standings_table = soup.find(id='standings-table')
-standings_table_body = standings_table.find('tbody')
-rows = standings_table_body.find_all('tr')
-
-
 def get_nba_team_row(html_row) -> list:
     team_name = html_row['data-team']
 
@@ -29,4 +20,28 @@ def get_nba_team_row(html_row) -> list:
     return [team_name, win_probability, current_time]
 
 
-data = [get_nba_team_row(row) for row in rows]
+def get_538_nba_standings_html_table(url: str):
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    standings_table = soup.find(id='standings-table')
+    return standings_table
+
+
+def get_538_nba_standings_list(url: str) -> list:
+    html_table = get_538_nba_standings_html_table(url)
+    html_table_body = html_table.find('tbody')
+    rows = html_table_body.find_all('tr')
+    
+    return [get_nba_team_row(row) for row in rows]
+
+
+def main():
+    url = 'https://projects.fivethirtyeight.com/2023-nba-predictions/?ex_cid=rrpromo'
+
+    standings = get_538_nba_standings_list(url)
+
+    print(standings)
+
+
+if __name__ == '__main__':
+    main()
